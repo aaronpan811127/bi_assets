@@ -2,9 +2,9 @@
 
 Monorepo for multi-domain BI assets (Metric Views, Dashboards, Genie Agents) SDLC in Genie Code. Each domain forms a self-contained bundle which can be owned, developed, secured and deployed (with DAB) independently.
 
-> 📖 **New here? Start with the [User Guide](user-guide.md)** — getting-started steps, workflow diagram, and the Genie Code cheat sheet.
+> 🛠️ **Setting up a new environment? Start with the [Setup Guide](00_setup/setup-guide.md)** — one-time admin steps to stand up this repo in a customer workspace.
 >
-> 🛠️ **Setting up a new environment? See the [Setup Guide](setup-guide.md)** — one-time admin steps to stand up this repo in a customer workspace.
+> 📖 **Ready to build? See the [User Guide](user-guide.md)** — getting-started steps, workflow diagram, and the Genie Code cheat sheet.
 
 ## Folder structure
 
@@ -12,7 +12,6 @@ Monorepo for multi-domain BI assets (Metric Views, Dashboards, Genie Agents) SDL
 bi_assets/
 ├── README.md                       # What's in the repo
 ├── user-guide.md                   # Getting started guide & Genie Code cheat sheet
-├── setup-guide.md                  # One-time admin setup for a new environment
 ├── .gitignore                      # boilerplate gitignore file
 │
 ├── .github/                        # CI/CD pipeline (GitHub Actions)
@@ -25,19 +24,19 @@ bi_assets/
 │   └── scripts/
 │       └── detect-changed-dabs.sh  # detect changed DAB folders from a git diff
 │
-├── 00_tools/                       # installable CI/CD helper commands (bi-tools)
-│   ├── bi_tools/
-│   │   ├── dab_prehook.py          #   rule-based config validation (CI + CD)
-│   │   └── metric_view_deploy.py   #   deploy metric views (CD)
-│   └── pyproject.toml
-│
-├── 00_notebooks/                   # utilities used by agent skills (deploy to dev workspace)
-│   ├── sync-genie-space            #   create/update genie agents from *.genie_space.json
-│   └── generate-dab                #   generate *.genie_space.json + resources/*.yml + databricks.yml
-│
-├── 00_skills/                      # agent skills for Genie Code (call 00_notebooks)
-│   ├── sync-genie-space
-│   └── generate-dab
+├── 00_setup/                       # one-time setup: admin guide + platform utilities/skills/tools
+│   ├── setup-guide.md              #   admin steps to stand up a new environment
+│   ├── notebooks/                  #   utilities used by agent skills (deploy to dev workspace)
+│   │   ├── sync_genie_space.py     #     create/update genie agents from *.genie_space.json
+│   │   └── generate_dab.py         #     generate *.genie_space.json + resources/*.yml + databricks.yml
+│   ├── skills/                     #   agent skills for Genie Code (call notebooks)
+│   │   ├── sync-genie-space/
+│   │   └── generate-dab/
+│   └── tools/                      #   installable CI/CD helper commands (bi-tools)
+│       ├── bi_tools/
+│       │   ├── dab_prehook.py      #     rule-based config validation (CI + CD)
+│       │   └── metric_view_deploy.py  #  deploy metric views (CD)
+│       └── pyproject.toml
 │
 ├── 01_shared_metric_views/         # DAB bundle: metric views shared across domains (manual)
 │   ├── assets/
@@ -71,13 +70,14 @@ bi_assets/
 
 - `README.md` - What's in the repo
 - `user-guide.md` - Getting started user guide and cheat sheet on developing using Genie Code
-- `setup-guide.md` - One-time admin steps to set up this repo in a new customer environment
-- `00_notebooks` - supporting utilities used by agents skills in Genie Code.
-- `00_skills` - agents skills used in Genie Code calling `00_notebooks`
-- `01_shared_metric_views` - DAB bundle with metric view definitions shared by more than one domain
-- `.gitignore` - boilerplate gitignore file
 - `.github/` - CI/CD pipeline (GitHub Actions)
-- `00_tools` - installable `bi-tools` package: `dab_prehook` and `metric_view_deploy` commands used by the CI/CD pipeline
+- `00_setup/` - one-time environment setup (admins), containing:
+  - `setup-guide.md` - one-time admin steps to set up this repo in a new customer environment
+  - `notebooks/` - supporting utilities used by agents skills in Genie Code
+  - `skills/` - agents skills used in Genie Code calling `notebooks/`
+  - `tools/` - installable `bi-tools` package: `dab_prehook` and `metric_view_deploy` commands used by the CI/CD pipeline
+- `01_shared_metric_views/` - DAB bundle with metric view definitions shared by more than one domain
+- `.gitignore` - boilerplate gitignore file
 
 Remaining top-level folder represents a domain bundle:
 
@@ -109,14 +109,14 @@ Shared metric views in this folder are manually maintained. When the system gene
 - `resources/metric_views.yml` - Databricks shared metric view definitions.
 - `databricks.yml` - boilerplate bundle entrypoint for that bundle.
 
-### 00_notebooks
+### 00_setup/notebooks
 
 Supporting utilities used by agents skills in Genie Code. Should be deployed to dev workspace. e.g. `/Workspace/shared_bi_utilities`
 
 - `sync-genie-space` - create or update genie agents, i.e. `.geniespace.json` from `.genie_space.json` file.
 - `generate-dab` - generate `.genie_space.json` from `.geniespace.json`, generate `resources/dashboards.yml`, `resources/genie_agents.yml`, `resources/metric_view.yml` and `databricks.yml` file.
 
-### 00_skills
+### 00_setup/skills
 
 Deployed in `/Workspace/.assistance/skills/`
 
@@ -130,8 +130,8 @@ bundle folders (any top-level folder containing a `databricks.yml`) using
 `.github/scripts/detect-changed-dabs.sh`, then run the Databricks CLI against each one.
 
 The `dab_prehook` and `metric_view_deploy` steps below are provided by the `bi-tools`
-package in `00_tools/` (installed via `pip install ./00_tools` by the `setup-databricks`
-composite action).
+package in `00_setup/tools/` (installed via `pip install ./00_setup/tools` by the
+`setup-databricks` composite action).
 
 ### CI Behaviour
 

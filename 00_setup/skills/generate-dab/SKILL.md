@@ -10,7 +10,7 @@ description: >-
 # generate-dab
 
 **PLACEHOLDER skill.** Wraps the `/Workspace/shared_bi_utilities/generate_dab`
-notebook (source: `00_notebooks/generate_dab.py`).
+notebook (source: `notebooks/generate_dab.py`).
 
 ## When to use
 

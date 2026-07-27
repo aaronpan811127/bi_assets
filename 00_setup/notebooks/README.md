@@ -1,6 +1,6 @@
-# 00_notebooks
+# notebooks
 
-Supporting utilities used by the agent skills in `00_skills`. Deploy these to the
+Supporting utilities used by the agent skills in `skills`. Deploy these to the
 dev workspace, e.g. `/Workspace/shared_bi_utilities`.
 
 | Notebook | Purpose |

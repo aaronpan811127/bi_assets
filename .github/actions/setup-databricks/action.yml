@@ -35,7 +35,7 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        pip install ./00_tools
+        pip install ./00_setup/tools
         dab_prehook --help >/dev/null && echo "dab_prehook installed"
         metric_view_deploy --help >/dev/null && echo "metric_view_deploy installed"
 

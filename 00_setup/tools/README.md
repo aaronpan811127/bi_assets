@@ -14,7 +14,7 @@ GitHub Actions pipelines:
 ## Install
 
 ```bash
-pip install ./00_tools
+pip install ./00_setup/tools
 ```
 
 This puts `dab_prehook` and `metric_view_deploy` on `PATH`. Both accept an optional

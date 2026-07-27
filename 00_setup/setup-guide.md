@@ -1,7 +1,7 @@
 # Setup Guide
 
 One-time steps for an **administrator** to stand up this repo in a new customer
-environment, before BI developers can follow the [User Guide](user-guide.md).
+environment, before BI developers can follow the [User Guide](../user-guide.md).
 
 > Audience: platform / workspace admin. Developers do **not** need to do any of this.
 
@@ -46,10 +46,10 @@ are members of the group(s) that own the domains they work on.
 ## 4. Deploy the shared utilities (notebooks)
 
 The Genie Code skills call notebooks that must exist in the workspace. Deploy the contents
-of `00_notebooks/` to the path the skills expect (default `/Workspace/shared_bi_utilities`):
+of `00_setup/notebooks/` to the path the skills expect (default `/Workspace/shared_bi_utilities`):
 
 ```bash
-databricks workspace import-dir 00_notebooks /Workspace/shared_bi_utilities --overwrite
+databricks workspace import-dir 00_setup/notebooks /Workspace/shared_bi_utilities --overwrite
 ```
 
 > These notebooks are **placeholders** — implement their logic (Databricks SDK / Genie APIs)
@@ -57,17 +57,17 @@ databricks workspace import-dir 00_notebooks /Workspace/shared_bi_utilities --ov
 
 ## 5. Install the Genie Code skills
 
-Install the skills under `00_skills/` at the location Genie Code loads from
+Install the skills under `00_setup/skills/` at the location Genie Code loads from
 (`/Workspace/.assistance/skills/`):
 
 ```bash
-databricks workspace import-dir 00_skills /Workspace/.assistance/skills --overwrite
+databricks workspace import-dir 00_setup/skills /Workspace/.assistance/skills --overwrite
 ```
 
 ## 6. Install the CI/CD helper tools
 
 The pipeline uses `dab_prehook` and `metric_view_deploy` from the `bi-tools` package.
-CI installs these automatically (`pip install ./00_tools`), but implement their logic
+CI installs these automatically (`pip install ./00_setup/tools`), but implement their logic
 (currently placeholders) before relying on the pipeline for real validation/deploys.
 
 ## 7. Configure the DAB deployment target
@@ -108,5 +108,5 @@ grant it the same group membership/privileges as `bi-admins`.
 
 ## Done
 
-The environment is ready. Point BI developers at the **[User Guide](user-guide.md)** to start
+The environment is ready. Point BI developers at the **[User Guide](../user-guide.md)** to start
 building dashboards, genie agents and metric views.

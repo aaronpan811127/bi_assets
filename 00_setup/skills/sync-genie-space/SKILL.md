@@ -10,7 +10,7 @@ description: >-
 # sync-genie-space
 
 **PLACEHOLDER skill.** Wraps the `/Workspace/shared_bi_utilities/sync_genie_space`
-notebook (source: `00_notebooks/sync_genie_space.py`).
+notebook (source: `notebooks/sync_genie_space.py`).
 
 ## When to use
 
