@@ -3,6 +3,8 @@
 Monorepo for multi-domain BI assets (Metric Views, Dashboards, Genie Agents) SDLC in Genie Code. Each domain forms a self-contained bundle which can be owned, developed, secured and deployed (with DAB) independently.
 
 > 📖 **New here? Start with the [User Guide](user-guide.md)** — getting-started steps, workflow diagram, and the Genie Code cheat sheet.
+>
+> 🛠️ **Setting up a new environment? See the [Setup Guide](setup-guide.md)** — one-time admin steps to stand up this repo in a customer workspace.
 
 ## Folder structure
 
@@ -10,6 +12,7 @@ Monorepo for multi-domain BI assets (Metric Views, Dashboards, Genie Agents) SDL
 bi_assets/
 ├── README.md                       # What's in the repo
 ├── user-guide.md                   # Getting started guide & Genie Code cheat sheet
+├── setup-guide.md                  # One-time admin setup for a new environment
 ├── .gitignore                      # boilerplate gitignore file
 │
 ├── .github/                        # CI/CD pipeline (GitHub Actions)
@@ -68,6 +71,7 @@ bi_assets/
 
 - `README.md` - What's in the repo
 - `user-guide.md` - Getting started user guide and cheat sheet on developing using Genie Code
+- `setup-guide.md` - One-time admin steps to set up this repo in a new customer environment
 - `00_notebooks` - supporting utilities used by agents skills in Genie Code.
 - `00_skills` - agents skills used in Genie Code calling `00_notebooks`
 - `01_shared_metric_views` - DAB bundle with metric view definitions shared by more than one domain
