@@ -2,6 +2,8 @@
 
 Monorepo for multi-domain BI assets (Metric Views, Dashboards, Genie Agents) SDLC in Genie Code. Each domain forms a self-contained bundle which can be owned, developed, secured and deployed (with DAB) independently.
 
+> 📖 **New here? Start with the [User Guide](user-guide.md)** — getting-started steps, workflow diagram, and the Genie Code cheat sheet.
+
 ## Folder structure
 
 ```
