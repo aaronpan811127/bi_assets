@@ -1,0 +1,19 @@
+{
+  "display_name": "Sample Agent",
+  "description": "Sample native Genie space definition — EDIT THIS FILE by hand, then run generate-dab.",
+  "warehouse_id": "",
+  "table_identifiers": [
+    "data_governance.presentation.sample_governance"
+  ],
+  "instructions": [
+    {
+      "type": "text",
+      "content": "Answer questions about data governance: asset counts, domains and classifications."
+    }
+  ],
+  "sample_questions": [
+    "How many assets are classified as confidential?",
+    "Show asset counts by domain."
+  ],
+  "sql_expressions": []
+}

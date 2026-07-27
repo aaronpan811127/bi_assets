@@ -1,0 +1,117 @@
+name: CI — validate DAB bundles
+
+# Mirrors the CI behaviour documented in README.md:
+#   1. Detect changed DAB folders by diffing the feature branch against origin/master.
+#   2. For each changed DAB bundle run: dab_prehook -> bundle validate -> bundle plan.
+#   3. Post a per-bundle summary comment on the PR; fail the build if any bundle fails.
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: Detect changed DAB folders
+    runs-on: ubuntu-latest
+    outputs:
+      dabs: ${{ steps.detect.outputs.dabs }}
+      shared: ${{ steps.detect.outputs.shared }}
+      any: ${{ steps.detect.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so we can diff against the merge-base
+      - name: Detect changed bundles
+        id: detect
+        run: |
+          git fetch --no-tags origin master
+          bash .github/scripts/detect-changed-dabs.sh origin/master
+
+  validate:
+    name: Validate ${{ matrix.dab }}
+    needs: detect
+    if: needs.detect.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Validate the shared bundle (when changed) plus every changed domain bundle.
+        dab: ${{ fromJSON(needs.detect.outputs.dabs) }}
+        include: ${{ needs.detect.outputs.shared == 'true' && fromJSON('[{"dab":"01_shared_metric_views"}]') || fromJSON('[]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-databricks
+        with:
+          host: ${{ vars.DATABRICKS_HOST }}
+          token: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: dab_prehook (rule-based config validation)
+        working-directory: ${{ matrix.dab }}
+        run: dab_prehook
+
+      - name: databricks bundle validate
+        working-directory: ${{ matrix.dab }}
+        run: databricks bundle validate
+
+      - name: databricks bundle plan
+        working-directory: ${{ matrix.dab }}
+        run: databricks bundle plan
+
+  comment:
+    name: Comment results on PR
+    needs: [detect, validate]
+    if: always() && needs.detect.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post PR summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = "${{ needs.validate.result }}";
+            const shared = "${{ needs.detect.outputs.shared }}" === "true";
+            const dabs = JSON.parse('${{ needs.detect.outputs.dabs }}' || "[]");
+            const bundles = shared ? ["01_shared_metric_views", ...dabs] : dabs;
+            const status = result === "success" ? "✅ SUCCESS" : "❌ FAILURE";
+            const lines = bundles.length
+              ? bundles.map(b => `- \`${b}\``).join("\n")
+              : "_No changed DAB folders._";
+            const body = [
+              "### Databricks Asset Bundle validation",
+              "",
+              `**Overall: ${status}**`,
+              "",
+              "Validated bundles (`dab_prehook` → `bundle validate` → `bundle plan`):",
+              lines,
+            ].join("\n");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  ci-gate:
+    name: CI gate
+    needs: [detect, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any bundle validation failed
+        run: |
+          if [ "${{ needs.detect.outputs.any }}" != "true" ]; then
+            echo "No DAB folders changed — nothing to validate."
+            exit 0
+          fi
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "One or more DAB validations failed."
+            exit 1
+          fi
+          echo "All DAB validations passed."

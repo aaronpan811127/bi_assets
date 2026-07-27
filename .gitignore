@@ -1,0 +1,31 @@
+# Databricks Asset Bundles
+.databricks/
+bundle.tf.json
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Node / tooling
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local overrides & secrets
+*.local
+.env
+.env.*
+*.log

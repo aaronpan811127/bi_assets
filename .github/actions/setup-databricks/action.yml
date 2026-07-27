@@ -1,0 +1,51 @@
+name: Setup Databricks CLI & BI tools
+description: >-
+  Install the Databricks CLI and the repo's bi-tools package (dab_prehook,
+  metric_view_deploy), then configure authentication from repository secrets so
+  that `databricks bundle ...` and the helper commands can run.
+
+inputs:
+  host:
+    description: Databricks workspace host URL.
+    required: true
+  token:
+    description: Databricks PAT / OAuth token for authentication.
+    required: true
+  cli-version:
+    description: Databricks CLI version to install.
+    required: false
+    default: "0.240.0"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Databricks CLI
+      shell: bash
+      run: |
+        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh \
+          | sh -s -- "v${{ inputs.cli-version }}"
+        databricks version
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install BI tools (dab_prehook, metric_view_deploy)
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install ./00_tools
+        dab_prehook --help >/dev/null && echo "dab_prehook installed"
+        metric_view_deploy --help >/dev/null && echo "metric_view_deploy installed"
+
+    - name: Configure authentication
+      shell: bash
+      env:
+        DATABRICKS_HOST: ${{ inputs.host }}
+        DATABRICKS_TOKEN: ${{ inputs.token }}
+      run: |
+        # Export for subsequent steps in the job.
+        echo "DATABRICKS_HOST=${DATABRICKS_HOST}" >> "$GITHUB_ENV"
+        echo "DATABRICKS_TOKEN=${DATABRICKS_TOKEN}" >> "$GITHUB_ENV"
+        echo "DATABRICKS_BUNDLE_ENV=presentation" >> "$GITHUB_ENV"

@@ -1,0 +1,101 @@
+name: CD — deploy DAB bundles
+
+# Mirrors the CD behaviour documented in README.md:
+#   1. Detect changed DAB folders from the most recent merge commit delta.
+#   2. Shared metric views bundle (if changed) deploys FIRST:
+#        dab_prehook -> bundle validate -> metric_view_deploy
+#   3. Then each changed domain bundle deploys:
+#        dab_prehook -> bundle validate -> metric_view_deploy -> bundle deploy --auto-approve
+#
+# Shared metric views deploy before domain bundles because domain assets may
+# depend on them, so the deploy-shared job gates the deploy-domains matrix.
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-${{ github.workflow }}
+  cancel-in-progress: false # never interrupt an in-flight deploy
+
+jobs:
+  detect:
+    name: Detect changed DAB folders
+    runs-on: ubuntu-latest
+    outputs:
+      dabs: ${{ steps.detect.outputs.dabs }}
+      shared: ${{ steps.detect.outputs.shared }}
+      any: ${{ steps.detect.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect changed bundles (merge commit delta)
+        id: detect
+        run: bash .github/scripts/detect-changed-dabs.sh HEAD~1
+
+  deploy-shared:
+    name: Deploy shared metric views
+    needs: detect
+    if: needs.detect.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    environment: presentation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-databricks
+        with:
+          host: ${{ vars.DATABRICKS_HOST }}
+          token: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: dab_prehook (rule-based config validation)
+        working-directory: 01_shared_metric_views
+        run: dab_prehook
+
+      - name: databricks bundle validate
+        working-directory: 01_shared_metric_views
+        run: databricks bundle validate
+
+      - name: metric_view_deploy (shared metric views)
+        working-directory: 01_shared_metric_views
+        run: metric_view_deploy
+
+  deploy-domains:
+    name: Deploy ${{ matrix.dab }}
+    # Wait for the shared bundle: `needs` gates ordering, and the guard below
+    # tolerates the shared job being skipped (when it did not change).
+    needs: [detect, deploy-shared]
+    if: |
+      always() &&
+      needs.detect.outputs.dabs != '[]' &&
+      (needs.deploy-shared.result == 'success' || needs.deploy-shared.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: presentation
+    strategy:
+      fail-fast: false
+      matrix:
+        dab: ${{ fromJSON(needs.detect.outputs.dabs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-databricks
+        with:
+          host: ${{ vars.DATABRICKS_HOST }}
+          token: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: dab_prehook (rule-based config validation)
+        working-directory: ${{ matrix.dab }}
+        run: dab_prehook
+
+      - name: databricks bundle validate
+        working-directory: ${{ matrix.dab }}
+        run: databricks bundle validate
+
+      - name: metric_view_deploy (domain specific metric views)
+        working-directory: ${{ matrix.dab }}
+        run: metric_view_deploy
+
+      - name: databricks bundle deploy --auto-approve
+        working-directory: ${{ matrix.dab }}
+        run: databricks bundle deploy --auto-approve

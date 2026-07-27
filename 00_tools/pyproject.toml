@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bi-tools"
+version = "0.1.0"
+description = "CI/CD helper commands for the self-serve BI monorepo (placeholders)."
+requires-python = ">=3.10"
+dependencies = [
+    # "databricks-sdk>=0.30",  # uncomment when implementing real logic
+]
+
+[project.scripts]
+dab_prehook = "bi_tools.dab_prehook:main"
+metric_view_deploy = "bi_tools.metric_view_deploy:main"
+
+[tool.setuptools]
+packages = ["bi_tools"]

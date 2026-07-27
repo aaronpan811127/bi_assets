@@ -1,0 +1,49 @@
+{
+  "datasets": [
+    {
+      "name": "sample_governance",
+      "displayName": "Sample Governance",
+      "queryLines": [
+        "SELECT domain, classification, COUNT(*) AS asset_count",
+        "FROM data_governance.presentation.sample_governance",
+        "GROUP BY domain, classification",
+        "ORDER BY domain"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "overview",
+      "displayName": "Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "assets_by_domain",
+            "queries": [
+              {
+                "name": "main",
+                "query": {
+                  "datasetName": "sample_governance",
+                  "fields": [
+                    { "name": "domain", "expression": "`domain`" },
+                    { "name": "asset_count", "expression": "`asset_count`" }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": { "fieldName": "domain", "scale": { "type": "categorical" } },
+                "y": { "fieldName": "asset_count", "scale": { "type": "quantitative" } }
+              }
+            }
+          },
+          "position": { "x": 0, "y": 0, "width": 6, "height": 6 }
+        }
+      ]
+    }
+  ]
+}

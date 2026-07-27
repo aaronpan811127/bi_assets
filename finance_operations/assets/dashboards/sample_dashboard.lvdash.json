@@ -1,0 +1,49 @@
+{
+  "datasets": [
+    {
+      "name": "sample_costs",
+      "displayName": "Sample Costs",
+      "queryLines": [
+        "SELECT cost_center, month, SUM(amount) AS total_cost",
+        "FROM finance_operations.presentation.sample_costs",
+        "GROUP BY cost_center, month",
+        "ORDER BY month"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "overview",
+      "displayName": "Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "cost_by_month",
+            "queries": [
+              {
+                "name": "main",
+                "query": {
+                  "datasetName": "sample_costs",
+                  "fields": [
+                    { "name": "month", "expression": "`month`" },
+                    { "name": "total_cost", "expression": "`total_cost`" }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": { "fieldName": "month", "scale": { "type": "temporal" } },
+                "y": { "fieldName": "total_cost", "scale": { "type": "quantitative" } }
+              }
+            }
+          },
+          "position": { "x": 0, "y": 0, "width": 6, "height": 6 }
+        }
+      ]
+    }
+  ]
+}
