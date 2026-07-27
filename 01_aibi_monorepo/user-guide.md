@@ -6,7 +6,7 @@ by asking **Genie Code** in plain English.
 
 ## Getting started
 
-1. Add and open `bi_assets` in the git folder editor.
+1. Add and open `aibi_monorepo` in the git folder editor.
 2. Ask Genie Code: `checkout master and create branch <user>/<branch>`
    — e.g. `checkout master and create branch aaronpan/update-sample-dashboard`
 3. If the domain is new, create its folder structure: `<domain>/assets/dashboards`,`<domain>/assets/genie_agents`, `<domain>/assets/metric_views`, `<domain>/resources`
@@ -27,7 +27,7 @@ before generating the DAB and committing.
 
 ```mermaid
 flowchart TD
-    S1["1 · Open bi_assets in git folder editor"] --> S2["2 · Create branch<br/>(Genie Code)"]
+    S1["1 · Open aibi_monorepo in git folder editor"] --> S2["2 · Create branch<br/>(Genie Code)"]
     S2 --> S3["3 · Create domain folder structure<br/>(if new domain)"]
 
     S3 --> FORK{{"Develop assets in parallel"}}
@@ -74,7 +74,7 @@ You only work with your **domain folders** and the **shared metric views** folde
 │   └── metric_views.yml                   # 🤖 generated
 └── databricks.yml                         # 🤖 generated: bundle entrypoint
 
-01_shared_metric_views/                # metric views shared by more than one domain (manual)
+shared_metric_views/                # metric views shared by more than one domain (manual)
 ├── assets/metric_views/*.metric_view.json # ✍️  edit: shared metric views
 ├── resources/metric_views.yml             # ✍️  edit: shared metric views list
 └── databricks.yml

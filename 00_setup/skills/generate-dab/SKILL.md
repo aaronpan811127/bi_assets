@@ -24,7 +24,7 @@ notebook (source: `notebooks/generate_dab.py`).
 - `resources/dashboards.yml`
 - `resources/genie_agents.yml`
 - `resources/metric_views.yml` (domain-specific metric views only; shared metric
-  views in `01_shared_metric_views` are skipped)
+  views in `shared_metric_views` are skipped)
 - `databricks.yml`
 
 ## Inputs
@@ -32,7 +32,7 @@ notebook (source: `notebooks/generate_dab.py`).
 | Input | Description |
 | --- | --- |
 | `domain_path` | Path to the domain folder, e.g. `finance_operations`. |
-| `shared_metric_views_path` | Path to the shared metric views bundle (default `01_shared_metric_views`). |
+| `shared_metric_views_path` | Path to the shared metric views bundle (default `shared_metric_views`). |
 
 ## How it runs
 

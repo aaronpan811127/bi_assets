@@ -12,7 +12,7 @@
 # MAGIC    - `resources/dashboards.yml`
 # MAGIC    - `resources/genie_agents.yml`
 # MAGIC    - `resources/metric_views.yml` (domain-specific metric views only —
-# MAGIC      metric views declared in `01_shared_metric_views` are skipped)
+# MAGIC      metric views declared in `shared_metric_views` are skipped)
 # MAGIC 3. Generates the `databricks.yml` bundle entrypoint.
 # MAGIC
 # MAGIC Deploy this notebook to the dev workspace, e.g. `/Workspace/shared_bi_utilities`.
@@ -25,7 +25,7 @@
 # COMMAND ----------
 
 dbutils.widgets.text("domain_path", "", "Path to the domain folder, e.g. finance_operations")
-dbutils.widgets.text("shared_metric_views_path", "01_shared_metric_views", "Path to shared metric views bundle")
+dbutils.widgets.text("shared_metric_views_path", "shared_metric_views", "Path to shared metric views bundle")
 
 domain_path = dbutils.widgets.get("domain_path")
 shared_metric_views_path = dbutils.widgets.get("shared_metric_views_path")
@@ -39,7 +39,7 @@ shared_metric_views_path = dbutils.widgets.get("shared_metric_views_path")
 
 # COMMAND ----------
 
-def generate_dab(domain_path: str, shared_metric_views_path: str = "01_shared_metric_views") -> None:
+def generate_dab(domain_path: str, shared_metric_views_path: str = "shared_metric_views") -> None:
     """Generate deployable Genie definitions + DAB resource yml + databricks.yml."""
     raise NotImplementedError("Placeholder — implement DAB generation logic.")
 

@@ -34,8 +34,9 @@ runs:
     - name: Install BI tools (dab_prehook, metric_view_deploy)
       shell: bash
       run: |
+        # bi-tools is published by the 00_setup setup process (PyPI / internal index).
         python -m pip install --upgrade pip
-        pip install ./00_setup/tools
+        pip install "bi-tools>=0.1.0"
         dab_prehook --help >/dev/null && echo "dab_prehook installed"
         metric_view_deploy --help >/dev/null && echo "metric_view_deploy installed"
 

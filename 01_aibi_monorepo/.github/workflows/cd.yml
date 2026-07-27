@@ -51,15 +51,15 @@ jobs:
           token: ${{ secrets.DATABRICKS_TOKEN }}
 
       - name: dab_prehook (rule-based config validation)
-        working-directory: 01_shared_metric_views
+        working-directory: shared_metric_views
         run: dab_prehook
 
       - name: databricks bundle validate
-        working-directory: 01_shared_metric_views
+        working-directory: shared_metric_views
         run: databricks bundle validate
 
       - name: metric_view_deploy (shared metric views)
-        working-directory: 01_shared_metric_views
+        working-directory: shared_metric_views
         run: metric_view_deploy
 
   deploy-domains:

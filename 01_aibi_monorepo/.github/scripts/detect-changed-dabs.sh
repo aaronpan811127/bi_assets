@@ -3,7 +3,7 @@
 # Detect changed DAB bundle folders and emit them for GitHub Actions.
 #
 # A "DAB folder" is any top-level folder containing a databricks.yml
-# (e.g. finance_operations/, supply_chain/, 01_shared_metric_views/).
+# (e.g. finance_operations/, supply_chain/, shared_metric_views/).
 #
 # Usage:
 #   detect-changed-dabs.sh <base_ref>
@@ -13,14 +13,14 @@
 #   - CD (push to master): HEAD~1        -> diff the most recent merge commit delta
 #
 # Outputs (to $GITHUB_OUTPUT when set, else stdout):
-#   dabs   = JSON array of changed domain bundles  (excludes 01_shared_metric_views)
-#   shared = "true"/"false" whether 01_shared_metric_views changed
+#   dabs   = JSON array of changed domain bundles  (excludes shared_metric_views)
+#   shared = "true"/"false" whether shared_metric_views changed
 #   any    = "true"/"false" whether anything deployable changed
 #
 set -euo pipefail
 
 BASE_REF="${1:-origin/master}"
-SHARED_DIR="01_shared_metric_views"
+SHARED_DIR="shared_metric_views"
 
 # Three-dot for branch-vs-base (merge-base) diffs; two-dot for a commit delta.
 if [[ "$BASE_REF" == *"~"* || "$BASE_REF" == *".."* ]]; then

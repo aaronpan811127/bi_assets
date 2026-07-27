@@ -1,9 +1,14 @@
 # Setup Guide
 
-One-time steps for an **administrator** to stand up this repo in a new customer
-environment, before BI developers can follow the [User Guide](../user-guide.md).
+One-time steps for an **administrator** to stand up the **`aibi_monorepo`** repo in a new
+customer environment, before BI developers can follow the
+[User Guide](../01_aibi_monorepo/user-guide.md).
 
 > Audience: platform / workspace admin. Developers do **not** need to do any of this.
+>
+> This `00_setup/` folder is the setup tooling — notebooks, Genie Code skills, and the
+> `bi-tools` package. It is **not** part of the customer's `aibi_monorepo` repo; it is used
+> once to configure the environment that repo runs in.
 
 ## Prerequisites
 
@@ -14,9 +19,9 @@ environment, before BI developers can follow the [User Guide](../user-guide.md).
 - Local tooling for the person running CLI steps: `git`, the
   [Databricks CLI](https://docs.databricks.com/dev-tools/cli/) (v0.240+), and Python 3.10+.
 
-## 1. Fork / clone the repo into the customer org
+## 1. Create the `aibi_monorepo` repo in the customer org
 
-1. Create the repo in the customer's GitHub org (or fork this one).
+1. Create a repo from the contents of `01_aibi_monorepo/` in the customer's GitHub org.
 2. Add it as a **Databricks Git folder** (Repos) in the workspace so Genie Code can edit it.
 
 ## 2. Create Unity Catalog objects
@@ -64,15 +69,24 @@ Install the skills under `00_setup/skills/` at the location Genie Code loads fro
 databricks workspace import-dir 00_setup/skills /Workspace/.assistance/skills --overwrite
 ```
 
-## 6. Install the CI/CD helper tools
+## 6. Publish the CI/CD helper tools
 
-The pipeline uses `dab_prehook` and `metric_view_deploy` from the `bi-tools` package.
-CI installs these automatically (`pip install ./00_setup/tools`), but implement their logic
-(currently placeholders) before relying on the pipeline for real validation/deploys.
+The `aibi_monorepo` pipeline uses `dab_prehook` and `metric_view_deploy` from the `bi-tools`
+package, installed in CI via `pip install "bi-tools>=0.1.0"`. Build and publish it from
+`00_setup/tools/` to the index the pipeline can reach (PyPI or an internal index):
+
+```bash
+pip install build
+python -m build 00_setup/tools          # produces a wheel + sdist in 00_setup/tools/dist/
+# then upload dist/* to your package index (e.g. twine upload ...)
+```
+
+> The tools are **placeholders** — implement their logic before relying on the pipeline for
+> real validation/deploys. During development you can instead `pip install ./00_setup/tools`.
 
 ## 7. Configure the DAB deployment target
 
-Edit each domain's `databricks.yml` (and `01_shared_metric_views/databricks.yml`) so the
+Edit each domain's `databricks.yml` (and `shared_metric_views/databricks.yml`) so the
 `presentation` target points at the customer workspace:
 
 - `workspace.host` — replace `https://<your-workspace>.cloud.databricks.com` with the real URL.
@@ -108,5 +122,6 @@ grant it the same group membership/privileges as `bi-admins`.
 
 ## Done
 
-The environment is ready. Point BI developers at the **[User Guide](../user-guide.md)** to start
-building dashboards, genie agents and metric views.
+The environment is ready. Point BI developers at the
+**[User Guide](../01_aibi_monorepo/user-guide.md)** to start building dashboards, genie agents
+and metric views.

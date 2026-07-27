@@ -45,7 +45,7 @@ jobs:
       matrix:
         # Validate the shared bundle (when changed) plus every changed domain bundle.
         dab: ${{ fromJSON(needs.detect.outputs.dabs) }}
-        include: ${{ needs.detect.outputs.shared == 'true' && fromJSON('[{"dab":"01_shared_metric_views"}]') || fromJSON('[]') }}
+        include: ${{ needs.detect.outputs.shared == 'true' && fromJSON('[{"dab":"shared_metric_views"}]') || fromJSON('[]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-databricks
@@ -78,7 +78,7 @@ jobs:
             const result = "${{ needs.validate.result }}";
             const shared = "${{ needs.detect.outputs.shared }}" === "true";
             const dabs = JSON.parse('${{ needs.detect.outputs.dabs }}' || "[]");
-            const bundles = shared ? ["01_shared_metric_views", ...dabs] : dabs;
+            const bundles = shared ? ["shared_metric_views", ...dabs] : dabs;
             const status = result === "success" ? "✅ SUCCESS" : "❌ FAILURE";
             const lines = bundles.length
               ? bundles.map(b => `- \`${b}\``).join("\n")
