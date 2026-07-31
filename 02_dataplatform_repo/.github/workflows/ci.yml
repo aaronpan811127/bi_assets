@@ -1,0 +1,36 @@
+name: CI — validate shared metric views bundle
+
+# The data platform repo is a single DAB bundle rooted at the repo root.
+# On every PR: dab_prehook -> bundle validate -> bundle plan.
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate shared metric views
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-databricks
+        with:
+          host: ${{ vars.DATABRICKS_HOST }}
+          token: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: dab_prehook (rule-based config validation)
+        run: dab_prehook
+
+      - name: databricks bundle validate
+        run: databricks bundle validate
+
+      - name: databricks bundle plan
+        run: databricks bundle plan

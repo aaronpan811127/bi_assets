@@ -1,0 +1,40 @@
+name: CD — deploy shared metric views bundle
+
+# The data platform repo is a single DAB bundle rooted at the repo root.
+# On push to master: dab_prehook -> bundle validate -> metric_view_deploy.
+#
+# Shared metric views must deploy before any domain bundle that depends on
+# them. The consuming monorepo's own CD tolerates the shared bundle being
+# deployed out-of-band from this repo.
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-${{ github.workflow }}
+  cancel-in-progress: false # never interrupt an in-flight deploy
+
+jobs:
+  deploy:
+    name: Deploy shared metric views
+    runs-on: ubuntu-latest
+    environment: presentation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-databricks
+        with:
+          host: ${{ vars.DATABRICKS_HOST }}
+          token: ${{ secrets.DATABRICKS_TOKEN }}
+
+      - name: dab_prehook (rule-based config validation)
+        run: dab_prehook
+
+      - name: databricks bundle validate
+        run: databricks bundle validate
+
+      - name: metric_view_deploy (shared metric views)
+        run: metric_view_deploy

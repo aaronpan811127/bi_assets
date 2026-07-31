@@ -23,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       dabs: ${{ steps.detect.outputs.dabs }}
-      shared: ${{ steps.detect.outputs.shared }}
       any: ${{ steps.detect.outputs.any }}
     steps:
       - uses: actions/checkout@v4
@@ -43,9 +42,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Validate the shared bundle (when changed) plus every changed domain bundle.
+        # Validate every changed domain bundle.
         dab: ${{ fromJSON(needs.detect.outputs.dabs) }}
-        include: ${{ needs.detect.outputs.shared == 'true' && fromJSON('[{"dab":"shared_metric_views"}]') || fromJSON('[]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-databricks
@@ -76,9 +74,7 @@ jobs:
         with:
           script: |
             const result = "${{ needs.validate.result }}";
-            const shared = "${{ needs.detect.outputs.shared }}" === "true";
-            const dabs = JSON.parse('${{ needs.detect.outputs.dabs }}' || "[]");
-            const bundles = shared ? ["shared_metric_views", ...dabs] : dabs;
+            const bundles = JSON.parse('${{ needs.detect.outputs.dabs }}' || "[]");
             const status = result === "success" ? "✅ SUCCESS" : "❌ FAILURE";
             const lines = bundles.length
               ? bundles.map(b => `- \`${b}\``).join("\n")
