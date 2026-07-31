@@ -26,14 +26,15 @@ customer environment, before BI developers can follow the
 
 ## 2. Create Unity Catalog objects
 
-Each domain bundle expects a catalog/schema to hold its assets. Create one per domain
-(names should match the `catalog`/`schema` used in the domain's generated resources):
+The workspace is shared across teams, but **each team owns its own team catalog** so assets,
+data, and grants stay isolated. Create one catalog/schema per team/domain (names should match
+the `catalog`/`schema` used in the domain's generated resources):
 
 ```sql
--- Example for the finance_operations domain
+-- Example for the finance_operations team catalog
 CREATE CATALOG IF NOT EXISTS finance_operations;
 CREATE SCHEMA  IF NOT EXISTS finance_operations.presentation;
--- Repeat for supply_chain, and any future domain.
+-- Repeat for supply_chain, data_platform, and any future team/domain.
 ```
 
 ## 3. Create groups and grants
@@ -86,7 +87,7 @@ python -m build 00_setup/tools          # produces a wheel + sdist in 00_setup/t
 
 ## 7. Configure the DAB deployment target
 
-Edit each domain's `databricks.yml` (and `shared_metric_views/databricks.yml`) so the
+Edit each domain's `databricks.yml` (and `02_dataplatform_repo/databricks.yml`) so the
 `presentation` target points at the customer workspace:
 
 - `workspace.host` — replace `https://<your-workspace>.cloud.databricks.com` with the real URL.

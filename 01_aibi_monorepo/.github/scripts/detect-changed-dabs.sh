@@ -3,7 +3,7 @@
 # Detect changed DAB bundle folders and emit them for GitHub Actions.
 #
 # A "DAB folder" is any top-level folder containing a databricks.yml
-# (e.g. finance_operations/, supply_chain/, shared_metric_views/).
+# (e.g. finance_operations/, supply_chain/).
 #
 # Usage:
 #   detect-changed-dabs.sh <base_ref>
@@ -13,14 +13,12 @@
 #   - CD (push to master): HEAD~1        -> diff the most recent merge commit delta
 #
 # Outputs (to $GITHUB_OUTPUT when set, else stdout):
-#   dabs   = JSON array of changed domain bundles  (excludes shared_metric_views)
-#   shared = "true"/"false" whether shared_metric_views changed
+#   dabs   = JSON array of changed domain bundles
 #   any    = "true"/"false" whether anything deployable changed
 #
 set -euo pipefail
 
 BASE_REF="${1:-origin/master}"
-SHARED_DIR="shared_metric_views"
 
 # Three-dot for branch-vs-base (merge-base) diffs; two-dot for a commit delta.
 if [[ "$BASE_REF" == *"~"* || "$BASE_REF" == *".."* ]]; then
@@ -34,15 +32,10 @@ changed_top=$(git diff --name-only "$DIFF_SPEC" \
   | sort -u \
   | while read -r d; do [ -f "$d/databricks.yml" ] && echo "$d"; done)
 
-shared="false"
 domains=()
 while IFS= read -r d; do
   [ -z "$d" ] && continue
-  if [ "$d" = "$SHARED_DIR" ]; then
-    shared="true"
-  else
-    domains+=("$d")
-  fi
+  domains+=("$d")
 done <<< "$changed_top"
 
 # Build a JSON array of domain bundles.
@@ -53,17 +46,15 @@ else
 fi
 
 any="false"
-if [ "$shared" = "true" ] || [ "${#domains[@]}" -gt 0 ]; then
+if [ "${#domains[@]}" -gt 0 ]; then
   any="true"
 fi
 
-echo "Changed shared metric views: $shared"
 echo "Changed domain bundles: $dabs_json"
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   {
     echo "dabs=$dabs_json"
-    echo "shared=$shared"
     echo "any=$any"
   } >> "$GITHUB_OUTPUT"
 fi
