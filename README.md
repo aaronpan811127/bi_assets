@@ -80,7 +80,7 @@ The implementation is split into three independent **repos/tooling parts**, a se
 ## Folder structure
 
 ```text
-databricks-selfservice-bi-reference/   (this reference implementation)
+databricks-selfservice-bi-blueprint/   (this reference implementation)
 ├── README.md                          # this file
 ├── .gitignore
 │
