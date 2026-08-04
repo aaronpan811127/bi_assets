@@ -1,81 +1,75 @@
 # Databricks Enterprise Self-Service BI Reference Implementation
 
-This is an **opinionated reference implementation of a self-service BI environment on the
-Databricks platform**. It is not a product or a framework — it is a worked example, complete
-with **reference architecture, design, working code, and user guides**, that a team
-can read, adapt, and adopt to stand up self-service BI in their own Databricks account.
+This is a **worked example of a self-service BI setup on Databricks**. It is not a product or a
+framework — it is a complete example, with **architecture, design, working code, and user
+guides**, that a team can read, adapt, and use to set up self-service BI in their own Databricks
+account.
 
-It is opinionated on purpose: rather than cataloguing every option, it makes concrete choices
-(shared BI development workspace, per-team Unity Catalog isolation, monorepo of domain bundles,
-CI/CD-only promotion) and documents *why* each choice was made in the [ADRs](docs/design/ADRs/README.md)
-so you can accept a default or knowingly diverge from it.
+It makes specific choices on purpose (a shared BI development workspace, one Unity Catalog per
+team, a monorepo of domain bundles, and CI/CD as the only way to reach production) and explains
+*why* in the [ADRs](docs/design/ADRs/README.md), so you can take a default as-is or change it on
+purpose.
 
 ## Why this exists — the problem it solves
 
-Enterprises want business domains and citizen developers to build and ship their own BI assets
-(dashboards, Genie agents, metric views) **without waiting on the central data platform team**.
-Done ad hoc, that self-service quickly turns into a mess:
+Companies want business teams and non-specialist developers to build and ship their own BI
+assets (dashboards, Genie agents, metric views) **without waiting on the central data platform
+team**. Without structure, that quickly gets messy:
 
-- **No isolation.** Teams step on each other's data and grants in shared catalogs, or the org
-  sprawls into an unmanageable number of one-off workspaces.
-- **Ungoverned shadow data.** Prototypes never graduate to governed, owned assets, so critical
-  reports run on data nobody stands behind.
-- **Unsafe promotion.** Assets reach production by hand-editing, with no review, audit trail, or
-  repeatable path — and BI work gets coupled to the slow, high-blast-radius data platform release
-  cycle.
-- **No shared blueprint.** Every team reinvents structure, tooling, and CI/CD, and there is no
-  written record of why the environment is laid out the way it is.
+- **No isolation.** Teams overwrite each other's data and grants in shared catalogs, or the org
+  ends up with too many one-off workspaces to manage.
+- **Ungoverned data.** Prototypes never become owned, governed assets, so important reports run
+  on data nobody is responsible for.
+- **Unsafe promotion.** Assets reach production by hand, with no review, audit trail, or repeatable
+  path — and BI work gets tied to the slow, risky data platform release cycle.
+- **No shared blueprint.** Every team reinvents the structure, tooling, and CI/CD, and nobody
+  writes down why the environment is set up the way it is.
 
-This reference implementation answers those problems with a single opinionated blueprint: one
-**shared BI development workspace** with **per-team Unity Catalog isolation** (each team owns its
-own catalog, so assets, data, and grants never mix), a **team-catalog-as-incubator** path that
-graduates prototypes into the governed data platform, and **CI/CD as the only path to
-production** — all captured as architecture docs, ADRs, runnable code (DABs + pipelines), and
-step-by-step authoring guides.
+This reference implementation solves those problems with one clear blueprint: a **shared BI
+development workspace** where **each team gets its own Unity Catalog** (so assets, data, and
+grants never mix), a path that turns team prototypes into governed data platform assets, and
+**CI/CD as the only way to reach production** — all captured as architecture docs, ADRs, runnable
+code (DABs and pipelines), and step-by-step authoring guides.
 
-## Why it matters — accelerating adoption and scale
+## Why it matters — driving adoption and scale
 
-The point of this blueprint is to **accelerate the adoption and scale of Databricks BI products**
-— AI/BI Dashboards, Genie, and Metric Views — across an enterprise, by removing the setup,
-governance, and CI/CD questions that every team would otherwise have to answer from scratch.
-That creates value on both sides:
+This blueprint helps teams **adopt and scale Databricks BI products** — AI/BI Dashboards, Genie,
+and Metric Views — across a company by answering the setup, governance, and CI/CD questions up
+front, so each team doesn't have to. That helps both sides:
 
 ### For the customer
 
-- **Shortens time-to-first-dashboard.** A new domain team gets a proven workspace layout,
-  catalog isolation, tooling, and pipeline on day one instead of spending weeks designing them.
-- **Scales to many teams without sprawl.** Per-team catalog isolation and a monorepo of domain
-  bundles let the environment grow to dozens of domains while staying governed and maintainable.
-- **Encodes the paved road.** The opinionated defaults and ADRs give every team a consistent,
-  well-reasoned starting point, so good practice scales by copy-and-adapt rather than tribal
-  knowledge.
-- **Governance without slowing teams down.** Self-service authoring and CI/CD-only promotion
-  give the platform team control and auditability while domain teams keep shipping fast.
+- **Faster first dashboard.** A new team gets a proven workspace layout, catalog isolation,
+  tooling, and pipeline on day one instead of spending weeks building them.
+- **Scales to many teams without sprawl.** One catalog per team and a monorepo of domain bundles
+  let the environment grow to dozens of teams while staying governed and easy to maintain.
+- **A paved road.** The defaults and ADRs give every team a consistent, well-reasoned starting
+  point, so good practice spreads by copy-and-adapt instead of word of mouth.
+- **Governance without slowing teams down.** Self-service authoring plus CI/CD-only promotion
+  give the platform team control and auditability while teams keep shipping fast.
 
 ### For Databricks
 
-- **Drives adoption of Databricks BI products.** Lowering the barrier to safely author and ship
+- **More adoption of Databricks BI products.** Making it easier to safely build and ship
   Dashboards, Genie agents, and Metric Views means more of the business builds on the Databricks
-  Data Intelligence Platform rather than external BI tools.
-- **Deepens platform consumption.** More teams building governed BI on Unity Catalog increases
-  usage of Databricks compute, storage, and the semantic layer — expanding the footprint within
-  each account.
-- **A repeatable field asset.** The same blueprint can be reused across customers to
-  short-circuit "how should we structure self-service BI?" engagements and accelerate landing
-  and expansion.
+  Data Intelligence Platform instead of outside BI tools.
+- **More platform usage.** More teams building governed BI on Unity Catalog means more use of
+  Databricks compute, storage, and the semantic layer in each account.
+- **A reusable field asset.** The same blueprint works across customers, so it saves time on
+  "how should we structure self-service BI?" and helps land and expand accounts.
 
-The implementation is organised into three independent **repos/tooling parts**, a set of
-**asset-authoring guides**, and the **architecture docs**:
+The implementation is split into three independent **repos/tooling parts**, a set of
+**authoring guides**, and the **architecture docs**:
 
 | Folder | What it is | Audience |
 | --- | --- | --- |
-| [`00_setup/`](00_setup/) | **Setup tooling** used once to stand up `aibi_monorepo` in a customer environment — the admin [setup guide](00_setup/setup-guide.md), Genie Code notebooks & skills, and the `bi-tools` CI package. | Platform / workspace admins |
-| [`01_aibi_monorepo/`](01_aibi_monorepo/) | The **self-serve BI monorepo** — domain bundles (dashboards, genie agents, metric views) and the CI/CD pipeline. Treated as its own repo in the customer org. | BI developers / Platform |
-| [`02_dataplatform_repo/`](02_dataplatform_repo/) | The **shared metric views bundle** — metric views shared across domains, with its own CI/CD pipeline. Treated as its own repo, deployed before domain bundles that depend on it. | Data platform team / Platform |
+| [`00_setup/`](00_setup/) | **Setup tooling** used once to set up `aibi_monorepo` in a customer environment — the admin [setup guide](00_setup/setup-guide.md), Genie Code notebooks and skills, and the `bi-tools` CI package. | Platform / workspace admins |
+| [`01_aibi_monorepo/`](01_aibi_monorepo/) | The **self-serve BI monorepo** — domain bundles (dashboards, genie agents, metric views) and the CI/CD pipeline. Its own repo in the customer org. | BI developers / Platform |
+| [`02_dataplatform_repo/`](02_dataplatform_repo/) | The **shared metric views bundle** — metric views used by more than one domain, with its own CI/CD pipeline. Its own repo, deployed before the domain bundles that depend on it. | Data platform team / Platform |
 | [`03_metric_views_guide/`](03_metric_views_guide/) | Authoring guide for **metric views**. | BI developers / Data Engineers |
 | [`04_genie_agents_guide/`](04_genie_agents_guide/) | Authoring guide for **genie agents**. | BI developers |
 | [`05_dashboards_guide/`](05_dashboards_guide/) | Authoring guide for **dashboards**. | BI developers |
-| [`docs/`](docs/) | **Architecture docs** — the [high-level design](docs/design/high-level-design.md) and the [ADRs](docs/design/ADRs/README.md) recording each design decision. | Architects / anyone onboarding |
+| [`docs/`](docs/) | **Architecture docs** — the [high-level design](docs/design/high-level-design.md) and the [ADRs](docs/design/ADRs/README.md) that record each design decision. | Architects / anyone onboarding |
 
 ## Where to start
 
@@ -146,16 +140,16 @@ databricks-selfservice-bi-reference/   (this reference implementation)
 
 ## How the parts relate
 
-`00_setup/` is used once by an admin to configure a customer environment: it deploys the
-`notebooks/` and `skills/` into the workspace (so Genie Code can generate and sync assets) and
-publishes the `bi-tools` package (so the monorepo's CI can install `dab_prehook` and
-`metric_view_deploy`). After that, all day-to-day work happens inside `01_aibi_monorepo/`,
-which is self-contained and validated/deployed by its own pipeline.
+An admin runs `00_setup/` once to set up a customer environment: it deploys the `notebooks/` and
+`skills/` into the workspace (so Genie Code can generate and sync assets) and publishes the
+`bi-tools` package (so the monorepo's CI can install `dab_prehook` and `metric_view_deploy`).
+After that, all day-to-day work happens inside `01_aibi_monorepo/`, which is self-contained and
+validated and deployed by its own pipeline.
 
-`02_dataplatform_repo/` holds the metric views shared by more than one domain. It is its own
-repo with the same CI/CD pattern, deployed independently of (and ahead of) the domain bundles
-in `01_aibi_monorepo/` that depend on those shared metric views.
+`02_dataplatform_repo/` holds the metric views used by more than one domain. It is its own repo
+with the same CI/CD pattern, deployed separately from — and before — the domain bundles in
+`01_aibi_monorepo/` that depend on those shared metric views.
 
-The `03_`–`05_` guides document how to author each asset type (metric views, genie agents,
+The `03_`–`05_` guides show how to author each asset type (metric views, genie agents,
 dashboards). `docs/design/` records the architecture: the [high-level design](docs/design/high-level-design.md)
-and the [ADRs](docs/design/ADRs/README.md) that capture each design decision and its rationale.
+and the [ADRs](docs/design/ADRs/README.md) that capture each design decision and why it was made.
