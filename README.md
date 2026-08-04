@@ -58,22 +58,44 @@ front, so each team doesn't have to. That helps both sides:
 - **A reusable field asset.** The same blueprint works across customers, so it saves time on
   "how should we structure self-service BI?" and helps land and expand accounts.
 
+## High-level architecture
+
+![Self-service BI platform topology](docs/design/images/architecture.png)
+
+Three environments, each its own blast radius, fed by two independent Git repos:
+
+- **Data Platform Env** — the governed core (Dev → Stg → Prod, one catalog per stage) holding the
+  medallion architecture, enterprise data products, and the semantic layer.
+- **BI Development Env** — one **shared** BI development workspace where every domain builds its
+  assets, with **a team catalog per team** for isolation, reading Prod data read-only.
+- **Consumption Env** — a Consumption workspace of published dashboards and Genie agents, which
+  read live from the Prod and Team catalogs at query time.
+
+CI/CD is the **only** writer of Stg, Prod, and Consumption — no persona hand-edits a promoted
+environment. For the full walkthrough see the
+[high-level design](docs/design/high-level-design.md); for the BI Dev and Consumption internals
+(access model, promotion mechanics) see the
+[detailed design](docs/design/detailed-design-bi-dev-consumption.md).
+
+## What's in this repo
+
 The implementation is split into three independent **repos/tooling parts**, a set of
 **authoring guides**, and the **architecture docs**:
 
-| Folder | What it is | Audience |
-| --- | --- | --- |
-| [`00_setup/`](00_setup/) | **Setup tooling** used once to set up `aibi_monorepo` in a customer environment — the admin [setup guide](00_setup/setup-guide.md), Genie Code notebooks and skills, and the `bi-tools` CI package. | Platform / workspace admins |
-| [`01_aibi_monorepo/`](01_aibi_monorepo/) | The **self-serve BI monorepo** — domain bundles (dashboards, genie agents, metric views) and the CI/CD pipeline. Its own repo in the customer org. | BI developers / Platform |
-| [`02_dataplatform_repo/`](02_dataplatform_repo/) | The **shared metric views bundle** — metric views used by more than one domain, with its own CI/CD pipeline. Its own repo, deployed before the domain bundles that depend on it. | Data platform team / Platform |
-| [`03_metric_views_guide/`](03_metric_views_guide/) | Authoring guide for **metric views**. | BI developers / Data Engineers |
-| [`04_genie_agents_guide/`](04_genie_agents_guide/) | Authoring guide for **genie agents**. | BI developers |
-| [`05_dashboards_guide/`](05_dashboards_guide/) | Authoring guide for **dashboards**. | BI developers |
-| [`docs/`](docs/) | **Architecture docs** — the [high-level design](docs/design/high-level-design.md) and the [ADRs](docs/design/ADRs/README.md) that record each design decision. | Architects / anyone onboarding |
+| Folder | What it is | Audience | State |
+| --- | --- | --- | --- |
+| [`00_setup/`](00_setup/) | **Setup tooling** used once to set up `aibi_monorepo` in a customer environment — the admin [setup guide](00_setup/setup-guide.md), Genie Code notebooks and skills, and the `bi-tools` CI package. | Platform / workspace admins | Guide written; notebooks and `bi-tools` are stubs |
+| [`01_aibi_monorepo/`](01_aibi_monorepo/) | The **self-serve BI monorepo** — domain bundles (dashboards, genie agents, metric views) and the CI/CD pipeline. Its own repo in the customer org. | BI developers / Platform | `finance_operations` fully worked; CI/CD untested end-to-end |
+| [`02_dataplatform_repo/`](02_dataplatform_repo/) | The **shared metric views bundle** — metric views used by more than one domain, with its own CI/CD pipeline. Its own repo, deployed before the domain bundles that depend on it. | Data platform team / Platform | Bundle + shared metric views in place |
+| [`03_metric_views_guide/`](03_metric_views_guide/) | Authoring guide for **metric views**. | BI developers / Data Engineers | Not yet written |
+| [`04_genie_agents_guide/`](04_genie_agents_guide/) | Authoring guide for **genie agents**. | BI developers | Not yet written |
+| [`05_dashboards_guide/`](05_dashboards_guide/) | Authoring guide for **dashboards**. | BI developers | Not yet written |
+| [`docs/`](docs/) | **Architecture docs** — the [high-level](docs/design/high-level-design.md) and [detailed](docs/design/detailed-design-bi-dev-consumption.md) designs, the [ADRs](docs/design/ADRs/README.md) recording each decision, and `superpowers/specs/` for agreed-but-unbuilt work. | Architects / anyone onboarding | Complete |
+| [`TODO.md`](TODO.md) | **Open work** to finish this implementation, grouped by area. | Contributors | Current |
 
 ## Where to start
 
-- 🧭 **Understanding the architecture?** Read **[`docs/design/high-level-design.md`](docs/design/high-level-design.md)** and the **[ADRs](docs/design/ADRs/README.md)**.
+- 🧭 **Understanding the architecture?** Read **[`docs/design/high-level-design.md`](docs/design/high-level-design.md)**, the **[detailed design](docs/design/detailed-design-bi-dev-consumption.md)**, and the **[ADRs](docs/design/ADRs/README.md)**.
 - 🛠️ **Standing up a new customer environment?** Follow **[`00_setup/setup-guide.md`](00_setup/setup-guide.md)**.
 - 📖 **Developing BI assets?** See **[`01_aibi_monorepo/README.md`](01_aibi_monorepo/README.md)** and its [user guide](01_aibi_monorepo/user-guide.md).
 
@@ -82,6 +104,7 @@ The implementation is split into three independent **repos/tooling parts**, a se
 ```text
 databricks-selfservice-bi-blueprint/   (this reference implementation)
 ├── README.md                          # this file
+├── TODO.md                            # open work left to complete this implementation
 ├── .gitignore
 │
 ├── 00_setup/                          # setup tooling — configures the environment ONCE (admins)
@@ -130,12 +153,14 @@ databricks-selfservice-bi-blueprint/   (this reference implementation)
 ├── 05_dashboards_guide/               # authoring guide: dashboards
 │
 └── docs/                              # architecture docs
-    └── design/
-        ├── high-level-design.md       #   environments, personas, git repos
-        ├── ADRs/                      #   one numbered ADR per design decision
-        │   ├── README.md
-        │   └── 000N-*.md
-        └── images/architecture.png    #   topology diagram
+    ├── design/
+    │   ├── high-level-design.md       #   environments, personas, git repos
+    │   ├── detailed-design-bi-dev-consumption.md  # access model, env internals, promotion
+    │   ├── ADRs/                      #   one numbered ADR per design decision
+    │   │   ├── README.md
+    │   │   └── 000N-*.md
+    │   └── images/architecture.png    #   topology diagram
+    └── superpowers/specs/             # design specs for work not yet implemented
 ```
 
 ## How the parts relate
@@ -151,5 +176,15 @@ with the same CI/CD pattern, deployed separately from — and before — the dom
 `01_aibi_monorepo/` that depend on those shared metric views.
 
 The `03_`–`05_` guides show how to author each asset type (metric views, genie agents,
-dashboards). `docs/design/` records the architecture: the [high-level design](docs/design/high-level-design.md)
-and the [ADRs](docs/design/ADRs/README.md) that capture each design decision and why it was made.
+dashboards). `docs/design/` records the architecture in three layers: the
+[high-level design](docs/design/high-level-design.md) (environments, personas, repos), the
+[detailed design](docs/design/detailed-design-bi-dev-consumption.md) (the BI Dev and Consumption
+access model, environment internals, and promotion mechanics), and the
+[ADRs](docs/design/ADRs/README.md) that capture each design decision and why it was made.
+
+## Status
+
+This is a work in progress. The **State** column above says where each part stands: read the
+architecture docs and the `finance_operations` bundle as finished work, and treat the `bi-tools`
+commands, the Genie Code notebooks, and the CI/CD workflows as scaffolding whose logic is still
+stubbed. **[`TODO.md`](TODO.md)** tracks the full list of open work.
